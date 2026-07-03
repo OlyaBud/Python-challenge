@@ -1,0 +1,15 @@
+'''
+Напишите функцию super_L(n), находящую n-е число Люка.
+'''
+
+
+
+def luka(L0, L1, n):
+    for i in range(n-1):
+        L0, L1 = L1, L0+L1
+    return L1
+
+def super_L(n):
+    if n % 2 == 0:
+        return luka(2, 1, n//2) ** 2 - 2 * (-1)**(n//2)
+    return luka(2, 1, n)
