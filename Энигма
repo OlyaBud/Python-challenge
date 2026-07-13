@@ -1,0 +1,91 @@
+'''
+Реализуйте функцию enigma(text, ref, rot1, shift1, rot2, shift2, rot3, shift3, pairs="") с поворачивающимися и двигающимися роторам.
+
+text - исходный текст, который необходимо зашифровать
+ref - номер отражателя (согласно задаче https://stepik.org/lesson/283487/step/3)
+rot1, rot2, rot3 - номера роторов (согласно задаче https://stepik.org/lesson/283487/step/2)
+shift1, shift2, shift3 - сдвиги роторов (1, 2 и 3, соответственно)
+pairs - строка замен символов
+pairs может принимать одно из 3 видов значений:
+
+пустая строка, либо отсутствует в вызове - символы не заменяются коммутационной панелью
+строка из 2 символов - только эти 2 символа заменяются ДО и ПОСЛЕ шифрования (друг на друга, см. предыдущий шаг)
+строка из n пар символов, разделённых пробелом. Замены производятся в парах (друг на друга, см. предыдущий шаг) До и ПОСЛЕ шифрования
+Если атрибут pairs принял недопустимое значение (например 1 символ участвует в 2 или более парах), функция enigma должна вернуть текст:
+
+"Извините, невозможно произвести коммутацию"
+'''
+
+
+from collections import Counter
+def enigma(text, ref, rot1, shift1, rot2, shift2, rot3, shift3, pairs=""):
+    if any(v > 1 for k, v in Counter(pairs.upper()).items() if k != ' '):
+        return "Извините, невозможно произвести коммутацию"
+    d = {}
+    for pair in pairs.upper().split():
+        d[pair[0]] = pair[1]
+        d[pair[1]] = pair[0]
+    answer = ''
+    text = text.upper().replace(' ','')
+    shifting = {1: 17, 2: 5, 3:22, 4:10, 5:0, 6:(0, 13), 7:(0, 13), 8:(0, 13)}
+    for c in text:
+        shift3 += 1
+        if shift3 == shifting[rot3]:
+            shift2 += 1
+        if c in d:
+            c = d[c]
+        for rot, shift in zip((rot3, rot2, rot1), (shift3, shift2, shift1)):
+            c = caesar(c, shift)
+            c = rotor(c, rot)
+            c = caesar(c, -shift)
+        c = reflector(c, ref)
+        for rot, shift in zip((rot1, rot2, rot3), (shift1, shift2, shift3)):
+            c = caesar(c, shift)
+            c = rotor(c, rot, reverse=True)
+            c = caesar(c, -shift)
+             
+        if shift2 == shifting[rot2] - 1:
+            shift2 += 1
+            shift1 += 1
+        if shift3 == 26:
+            shift3 = 0
+
+        if c in d:
+            c = d[c]
+        answer += c
+    return answer
+
+def rotor(symbol, n, reverse=False):
+    d = {1: ('AELTPHQXRU', 'BKNW', 'CMOY', 'DFG', 'IV', 'JZ', 'S'),
+         2: ('FIXVYOMW', 'CDKLHUP', 'ESZ', 'BJ', 'GR', 'NT', 'A', 'Q'),
+         3: ('ABDHPEJT', 'CFLVMZOYQIRWUKXSG', 'N'),
+         4: ('AEPLIYWCOXMRFZBSTGJQNH', 'DV', 'KU'),
+         5: ('AVOLDRWFIUQ', 'BZKSMNHYC', 'EGTJPX'),
+         6: ('AJQDVLEOZWIYTS', 'CGMNHFUX', 'BPRK'),
+         7: ('ANOUPFRIMBZTLWKSVEGCJYDHXQ'),
+         8: ('AFLSETWUNDHOZVICQ', 'BKJ', 'GXY', 'MPR'),
+         'beta': ('ALBEVFCYODJWUGNMQTZSKPR', 'HIX'),
+         'gamma': ('AFNIRLBSQWVXGUZDKMTPCOYJHE'),
+         }
+    if n == 0:
+        return symbol
+    for c in d[n]:
+        if symbol in c and not reverse:
+            return c[(c.index(symbol)+1) % len(c)]
+        if symbol in c and reverse:
+            return c[(c.index(symbol)-1) % len(c)]
+           
+def reflector(symbol, n):
+    d = { 1: ('AY', 'BR', 'CU', 'DH', 'EQ', 'FS', 'GL', 'IP', 'JX', 'KN', 'MO', 'TZ', 'VW'),
+          2: ('AF', 'BV', 'CP', 'DJ', 'EI', 'GO', 'HY', 'KR', 'LZ', 'MX', 'NW', 'TQ', 'SU'),
+          3: ('AE', 'BN' 'CK', 'DQ', 'FU', 'GY', 'HW', 'IJ', 'LO', 'MP', 'RX', 'SZ', 'TV'),
+          4: ('AR', 'BD', 'CO', 'EJ', 'FN', 'GT', 'HK', 'IV', 'LM', 'PW', 'QZ', 'SX', 'UY') 
+        }
+    if n == 0:
+        return symbol
+    for c in d[1]:
+        if symbol in c:
+            return str(set(c) - set(symbol))[2]
+            
+def caesar(c, key):
+    return chr((ord(c) - ord('A') + key) % 26 + ord('A'))
