@@ -1,0 +1,39 @@
+'''
+Профессор Рандо выбирает два случайных целых числа от 1 до 5 (включительно).
+Дафна знает абсолютную разность чисел.
+Макс знает максимум двух чисел.
+Минди знает минимум двух чисел.
+Сэм знает сумму чисел.
+Каждый день профессор опрашивает студентов по очереди (в алфавитном порядке). Студент отвечает только тогда, когда точно знает оба числа, иначе пропускает ход. Побеждает тот, кто первым назовет правильную пару.
+С какой вероятностью победит каждый из студентов?
+'''
+
+
+
+from itertools import combinations_with_replacement
+from fractions import Fraction
+outcomes = [(i,j) for i, j in combinations_with_replacement(range(1,6), 2)]
+
+d_outcomes = {'daff':{}, 'maxx':{}, 'mindy':{}, 'sam':{}}
+functions = {'daff': lambda x: abs(x[0]-x[1]), 'maxx':max, 'mindy':min, 'sam':sum}
+prob = {'daff': 0, 'maxx': 0, 'mindy': 0, 'sam': 0}
+
+for x in outcomes:
+    for k in d_outcomes.keys():
+        d_outcomes[k].setdefault(functions[k](x),[]).append(x)
+
+deleted_outcomes = []
+
+n = 1
+while sum(prob.values()) < 25:
+    print(f'DAY {n}')
+    for name in d_outcomes.keys():
+        for k, v in d_outcomes[name].items():
+            if len(set(v) - set(deleted_outcomes)) == 1:
+                prob[name] += len(set(list(set(v) - set(deleted_outcomes))[0]))
+                print(f'deleted: {name}, {list(set(v) - set(deleted_outcomes))[0]}')
+                deleted_outcomes.append(list(set(v) - set(deleted_outcomes))[0])
+    n += 1
+print('\nANSWER:')
+for k, v in prob.items():
+    print(k, Fraction(v, 25))
