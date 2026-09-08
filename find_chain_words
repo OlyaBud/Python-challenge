@@ -1,0 +1,47 @@
+'''
+Ваша задача написать функцию find_chain_words со следующей сигнатурой:
+
+def find_chain_words(words, start_word, end_word, chain=None):
+
+которая бы находила наиболее короткую цепочку из слов списка words (состоящего из слов длиной 4 символа), начиная со слова start_word и заканчивая словом end_word. 
+Каждое последующее слово должно отличаться только одной буквой от предыдущего.
+
+Если цепочку между словами start_word и end_word сформировать нельзя, то функция должна возвращать пустой список.
+'''
+
+
+
+def find_chain_words(words, start_word, end_word, chain=None):
+    d = {}
+    for i in range(len(words)):
+        for j in range(i+1, len(words)):
+            if len(set(enumerate(words[i])) & set(enumerate(words[j]))) == 3:
+                d.setdefault(words[i], set()).add(words[j])
+                d.setdefault(words[j], set()).add(words[i])
+    path = [start_word]
+    seen = []
+    ended = []
+
+    while [start_word] not in seen:
+        current = path[-1]
+            
+        if end_word in d.get(current, []) and path not in ended:
+            ended.append(path)
+            path = [start_word]
+            continue
+
+        for word in d.get(current, []):
+            if word in path or path+[word] in seen or path in seen:
+                continue
+            path.append(word)
+            break
+        else:
+            seen.append(path)
+            if len(path) > 1:
+                path = path[:-1]
+
+    return min(ended, key=len) + [end_word] if ended else []
+
+words = ['вино', 'сука', 'срок', 'арка', 'тура', 'сова', 'жара', 'день', 'жгут', 'урна', 'заяц', 'зона', 'звук', 'гора', 'гусь', 'руна', 'суша', 'тара', 'враг', 'арба', 'кара', 'поза', 'бобр', 'икра', 'слон', 'доза', 'знак', 'груз', 'глаз', 'жаба', 'база', 'дока', 'губа', 'блин', 'жена', 'доля', 'роса', 'бита', 'каюк', 'друг', 'вера', 'заря', 'дыра', 'буря', 'дача', 'вода', 'кафр', 'дума', 'драп', 'баян', 'суха', 'диво', 'грач', 'дочь', 'брат', 'дуга', 'каюр', 'крюк', 'звон', 'пола', 'вата', 'град', 'банк', 'рука', 'сока', 'урюк', 'иней', 'дека', 'борт', 'бокс', 'сухо', 'мура', 'балл', 'врач', 'долг', 'урок', 'стон', 'мука', 'азот', 'лука', 'кафе', 'жест', 'вход', 'волк', 'муха', 'блок', 'гриф', 'жбан', 'двор', 'дело', 'зима', 'ваза', 'рана', 'сток', 'змея', 'каре', 'горе', 'полк', 'роза', 'арфа', 'игра']
+
+chain_result = find_chain_words(words, 'тара', 'сухо')
