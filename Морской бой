@@ -1,0 +1,71 @@
+'''
+Необходимо продолжить программу, в которой требуется выполнить расстановку кораблей игры "Морской бой" случайным образом на игровом поле (двумерном списке) game_board размером N x N элементов.
+
+Напомню, что в этой игре следует расставить:
+
+четырехпалубный корабль - 1 шт.;
+трехпалубный корабль - 2 шт.;
+двухпалубный корабль - 3 шт.;
+однопалубный корабль - 4 шт.
+'''
+
+
+
+import random
+from copy import copy
+
+class Ship:
+    def __init__(self, x, y, size, orient):
+        self.x = x
+        self.y = y
+        self.size = size
+        self.orient = orient
+
+class Board:
+    def __init__(self, N):
+        self.N = N
+        self.board = [[0] * N for _ in range(N)]
+        
+    def __str__(self):
+        return '\n'.join(' '.join(map(str, row)) for row in self.board)
+
+    def get_neig(self, x, y):
+        res = set()
+        for i in (-1, 0, 1):
+            for j in (-1, 0, 1):
+                if not(i==0 and j==0) and (-1 < x+i < self.N) and (-1 < y+j < self.N):
+                    res.add(self.board[x+i][y+j])
+        return res
+
+    def place(self, ship):
+        deep = copy(self.board)
+        for i in range(ship.size):
+            if not self.board[ship.x + i * (1 - ship.orient)][ship.y + i * ship.orient]:
+                self.board[ship.x + i * (1 - ship.orient)][ship.y + i * ship.orient] = 1
+            else:
+                self.board = deep
+                return False
+
+        for i in range(self.N):
+            for j in range(self.N):
+                if not self.board[i][j] and 1 in self.get_neig(i, j):
+                    self.board[i][j] = 2
+        return True
+
+    def clean(self):
+        for i in range(self.N):
+            for j in range(self.N):
+                if self.board[i][j] == 2:
+                    self.board[i][j] = 0
+
+N = 10
+size_ships = (4, 3, 3, 2, 2, 2, 1, 1, 1, 1)
+
+b = Board(N)
+for size in size_ships:
+    while True:
+        s = Ship(random.randint(0, N-size), random.randint(0, N-size), size, random.randint(0, 1))
+        if b.place(s):
+            break
+b.clean()
+game_board = b.board
