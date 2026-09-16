@@ -1,0 +1,15 @@
+'''
+С помощью оператора match/case в функцию parse_json добавьте в самое начало шаблон для выделения значений ключей login и email с проверкой, что они являются строками и при условии, что поле access принимает значение True. Возвратите выделенные два значения в виде кортежа в формате (login, email).
+
+Словарь json_data приведен, как пример общей структуры. Конкретное наполнение (длины списков, словарей) может меняться.
+'''
+
+
+def parse_json(data):
+    match data:
+        case {'access': True, 'data':[_, {'login': str() as l, 'email': str() as e}, *_]}:
+            return l, e
+        case _:
+            return None
+
+json_data = {'id': 2, 'access': True, 'data': ['26.05.2023', {'login': '1234', 'email': 'xxx@mail.com'}, 2000, 56.4]}
